@@ -19,33 +19,51 @@ root_radius_factor = 0.38
 youngs_modulus = 210e9
 poissons_ratio = 0.3
 input_torque = 100
+class gear_tooth:
+    def __init__(self, teeth_number, module, pressure_angle):
+        self.teeth_number = teeth_number
+        self.module = module
+        self.pressure_angle = pressure_angle
+        self.pitch_diameter = module * teeth_number
+        self.base_radius = self.pitch_diameter / 2 * np.cos(pressure_angle)
+        self.addendum = addendum_coefficient * module
+        self.dedendum = dedendum_coefficient * module
+        self.root_radius = root_radius_factor * module
 
-def bending_stress(teeth_number_pinion, teeth_number_gear, pressure_angle):
-    # Implementation for bending stress calculation
-    pass
 
-def contact_ratio(teeth_number_pinion, teeth_number_gear, pressure_angle):
-    pitch_diameter_pinion = module * teeth_number_pinion
-    pitch_diameter_gear = module * teeth_number_gear
-    base_radius_pinion = pitch_diameter_pinion / 2 * np.cos(working_pressure_angle)
-    base_radius_gear = pitch_diameter_gear / 2 * np.cos(working_pressure_angle)
+    def bending_stress(teeth_number_pinion, teeth_number_gear, pressure_angle):
+        # Implementation for bending stress calculation
+        pass
+
+    def contact_ratio(teeth_number_pinion, teeth_number_gear, pressure_angle):
+        pitch_diameter_pinion = module * teeth_number_pinion
+        pitch_diameter_gear = module * teeth_number_gear
+        base_radius_pinion = pitch_diameter_pinion / 2 * np.cos(working_pressure_angle)
+        base_radius_gear = pitch_diameter_gear / 2 * np.cos(working_pressure_angle)
+        
+        addendum_pinion = addendum_coefficient * module
+        dedendum_pinion = dedendum_coefficient * module
+        addendum_gear = addendum_coefficient * module
+        dedendum_gear = dedendum_coefficient * module
+        
+        path_length = (addendum_pinion + dedendum_gear) / np.sin(working_pressure_angle)
+        
+        return path_length / (np.pi * module)
+
+
+    def involute_profile(base_radius, start_angle, end_angle, num_points=100):
+        angles = np.linspace(start_angle, end_angle, num_points)
+        x = base_radius * (np.cos(angles) + angles * np.sin(angles))
+        y = base_radius * (np.sin(angles) - angles * np.cos(angles))
+        return x, y
+
+    def tooth_thickenness_half_angle(teeth_number):
+        
+        return np.pi / (2 * teeth_number)
     
-    addendum_pinion = addendum_coefficient * module
-    dedendum_pinion = dedendum_coefficient * module
-    addendum_gear = addendum_coefficient * module
-    dedendum_gear = dedendum_coefficient * module
-    
-    path_length = (addendum_pinion + dedendum_gear) / np.sin(working_pressure_angle)
-    
-    return path_length / (np.pi * module)
+if __name__ == "__main__":
+    pinion = gear_tooth(teeth_number_pinion, module, pressure_angle)
+    gear = gear_tooth(teeth_number_gear, module, pressure_angle)
 
-
-def involute_profile(base_radius, start_angle, end_angle, num_points=100):
-    angles = np.linspace(start_angle, end_angle, num_points)
-    x = base_radius * (np.cos(angles) + angles * np.sin(angles))
-    y = base_radius * (np.sin(angles) - angles * np.cos(angles))
-    return x, y
-
-def tooth_thickenness_half_angle(teeth_number):
-    
-    return np.pi / (2 * teeth_number)
+    contact_ratio_value = gear_tooth.contact_ratio(teeth_number_pinion, teeth_number_gear, pressure_angle)
+    print(f"Contact Ratio: {contact_ratio_value:.2f}")
